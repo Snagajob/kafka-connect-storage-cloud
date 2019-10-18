@@ -16,9 +16,6 @@
 package io.confluent.connect.s3;
 
 import com.amazonaws.AmazonClientException;
-import io.confluent.connect.s3.notification.KafkaNotificationService;
-import io.confluent.connect.s3.notification.NoOpNotificationService;
-import io.confluent.connect.s3.notification.NotificationService;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.connect.errors.ConnectException;
@@ -38,6 +35,9 @@ import java.util.Set;
 
 import io.confluent.common.utils.SystemTime;
 import io.confluent.common.utils.Time;
+import io.confluent.connect.s3.notification.KafkaNotificationService;
+import io.confluent.connect.s3.notification.NoOpNotificationService;
+import io.confluent.connect.s3.notification.NotificationService;
 import io.confluent.connect.s3.storage.S3Storage;
 import io.confluent.connect.s3.util.Version;
 import io.confluent.connect.storage.StorageFactory;
@@ -72,17 +72,9 @@ public class S3SinkTask extends SinkTask {
   }
 
   // visible for testing.
-  public S3SinkTask(NotificationService notificationService) {
-    this.notificationService = notificationService;
-    assignment = new HashSet<>();
-    topicPartitionWriters = new HashMap<>();
-    time = new SystemTime();
-  }
-
-  // visible for testing.
   S3SinkTask(S3SinkConnectorConfig connectorConfig, SinkTaskContext context, S3Storage storage,
              Partitioner<?> partitioner, Format<S3SinkConnectorConfig, String> format,
-             Time time, NotificationService notificationService) throws Exception {
+             Time time) throws Exception {
     this.assignment = new HashSet<>();
     this.topicPartitionWriters = new HashMap<>();
     this.connectorConfig = connectorConfig;
@@ -91,7 +83,6 @@ public class S3SinkTask extends SinkTask {
     this.partitioner = partitioner;
     this.format = format;
     this.time = time;
-    this.notificationService = notificationService;
 
     url = connectorConfig.getString(StorageCommonConfig.STORE_URL_CONFIG);
     writerProvider = this.format.getRecordWriterProvider();
@@ -252,6 +243,8 @@ public class S3SinkTask extends SinkTask {
     try {
       if (storage != null) {
         storage.close();
+      }
+      if (notificationService != null) {
         notificationService.close();
       }
     } catch (Exception e) {

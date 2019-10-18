@@ -489,7 +489,7 @@ public class S3SinkConnectorConfig extends StorageSinkConnectorConfig {
     this.name = parseName(originalsStrings());
 
     this.notificationKafkaEnabled =
-        Boolean.valueOf(originalsStrings().get("notification.kafka.enabled"));
+        Boolean.valueOf(originalsStrings().getOrDefault("notification.kafka.enabled", "false"));
     this.notificationKafkaTopic =
         originalsStrings().get("notification.kafka.topic");
     this.notificationKafkaBroker =

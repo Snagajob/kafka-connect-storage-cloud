@@ -15,6 +15,7 @@
 
 package io.confluent.connect.s3;
 
+import io.confluent.connect.s3.notification.NoOpNotificationService;
 import io.confluent.connect.s3.notification.NotificationService;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.connect.data.Schema;
@@ -37,7 +38,6 @@ import java.util.Queue;
 import io.confluent.common.utils.SystemTime;
 import io.confluent.common.utils.Time;
 import io.confluent.connect.s3.notification.FileUploadedMessage;
-import io.confluent.connect.s3.storage.S3Storage;
 import io.confluent.connect.storage.StorageSinkConnectorConfig;
 import io.confluent.connect.storage.common.StorageCommonConfig;
 import io.confluent.connect.storage.common.util.StringUtils;
@@ -86,26 +86,35 @@ public class TopicPartitionWriter {
   private DateTimeZone timeZone;
   private final S3SinkConnectorConfig connectorConfig;
   private static final Time SYSTEM_TIME = new SystemTime();
-  private NotificationService notificationService;
+  private final NotificationService notificationService;
 
-  public TopicPartitionWriter(TopicPartition tp,
-                              S3Storage storage,
+  // visible for testing
+  TopicPartitionWriter(TopicPartition tp,
+                              RecordWriterProvider<S3SinkConnectorConfig> writerProvider,
+                              Partitioner<?> partitioner,
+                              S3SinkConnectorConfig connectorConfig,
+                              SinkTaskContext context) {
+    this(tp, writerProvider, partitioner, connectorConfig, context, SYSTEM_TIME);
+  }
+
+  // visible for testing
+  TopicPartitionWriter(TopicPartition tp,
                               RecordWriterProvider<S3SinkConnectorConfig> writerProvider,
                               Partitioner<?> partitioner,
                               S3SinkConnectorConfig connectorConfig,
                               SinkTaskContext context,
-                              NotificationService notificationService) {
-    this(tp, writerProvider, partitioner, connectorConfig,
-            context, SYSTEM_TIME, notificationService);
+                              Time time) {
+    this(tp, writerProvider, partitioner, connectorConfig, context, time,
+        new NoOpNotificationService());
   }
 
-  // Visible for testing
-  TopicPartitionWriter(TopicPartition tp,
+  public TopicPartitionWriter(TopicPartition tp,
                        RecordWriterProvider<S3SinkConnectorConfig> writerProvider,
                        Partitioner<?> partitioner,
                        S3SinkConnectorConfig connectorConfig,
                        SinkTaskContext context,
-                       Time time, NotificationService notificationService) {
+                       Time time,
+                       NotificationService notificationService) {
     this.connectorConfig = connectorConfig;
     this.notificationService = notificationService;
     this.time = time;

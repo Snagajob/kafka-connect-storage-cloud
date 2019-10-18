@@ -45,12 +45,15 @@ public class KafkaNotificationService implements NotificationService {
         s3SinkConnectorConfig.getNotificationKafkaTopic());
   }
 
-  public KafkaNotificationService(KafkaProducer producer, String notificationTopic) {
+  public KafkaNotificationService(KafkaProducer<String, FileUploadedMessage> producer,
+                                  String notificationTopic) {
     this.producer = producer;
     this.notificationTopic = notificationTopic;
   }
 
-  private static KafkaProducer createProducer(S3SinkConnectorConfig s3SinkConnectorConfig) {
+  private static KafkaProducer<String, FileUploadedMessage> createProducer(
+      S3SinkConnectorConfig s3SinkConnectorConfig) {
+    
     final Properties producerProps = new Properties();
     producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
         s3SinkConnectorConfig.getNotificationKafkaBroker());
