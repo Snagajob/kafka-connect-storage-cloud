@@ -1,5 +1,5 @@
 {
-  "namespace": "s3connect",
+  "namespace": "io.confluent.connect.s3.notification",
   "type": "record",
   "name": "FileUploadedMessage",
   "fields": [

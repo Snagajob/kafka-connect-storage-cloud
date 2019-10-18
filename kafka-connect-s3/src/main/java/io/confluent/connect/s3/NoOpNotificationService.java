@@ -15,7 +15,7 @@
 
 package io.confluent.connect.s3;
 
-import s3connect.FileUploadedMessage;
+import io.confluent.connect.s3.notification.FileUploadedMessage;
 
 public class NoOpNotificationService implements NotificationService {
 

@@ -34,18 +34,13 @@ import org.junit.Rule;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
-import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import s3connect.FileUploadedMessage;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyChar;
 import static org.mockito.Mockito.mock;
 
 public class S3SinkConnectorTestBase extends StorageSinkTestBase {

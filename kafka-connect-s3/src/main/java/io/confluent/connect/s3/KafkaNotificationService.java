@@ -15,8 +15,8 @@
 
 package io.confluent.connect.s3;
 
+import io.confluent.connect.s3.notification.FileUploadedMessage;
 import org.apache.kafka.clients.producer.KafkaProducer;
-import s3connect.FileUploadedMessage;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 import io.confluent.kafka.serializers.subject.TopicRecordNameStrategy;
