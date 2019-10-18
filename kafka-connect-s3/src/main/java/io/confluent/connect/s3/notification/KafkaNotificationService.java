@@ -13,9 +13,9 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package io.confluent.connect.s3;
+package io.confluent.connect.s3.notification;
 
-import io.confluent.connect.s3.notification.FileUploadedMessage;
+import io.confluent.connect.s3.S3SinkConnectorConfig;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;

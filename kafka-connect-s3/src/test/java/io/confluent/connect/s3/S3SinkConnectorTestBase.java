@@ -22,6 +22,8 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import io.confluent.common.utils.SystemTime;
 import io.confluent.common.utils.Time;
 import io.confluent.connect.s3.format.avro.AvroFormat;
+import io.confluent.connect.s3.notification.KafkaNotificationService;
+import io.confluent.connect.s3.notification.NotificationService;
 import io.confluent.connect.storage.StorageSinkConnectorConfig;
 import io.confluent.connect.storage.StorageSinkTestBase;
 import io.confluent.connect.storage.common.StorageCommonConfig;

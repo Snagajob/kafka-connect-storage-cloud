@@ -13,9 +13,7 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package io.confluent.connect.s3;
-
-import io.confluent.connect.s3.notification.FileUploadedMessage;
+package io.confluent.connect.s3.notification;
 
 public class NoOpNotificationService implements NotificationService {
 
