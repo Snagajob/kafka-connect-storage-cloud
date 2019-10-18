@@ -94,7 +94,8 @@ public class TopicPartitionWriter {
                               S3SinkConnectorConfig connectorConfig,
                               SinkTaskContext context,
                               NotificationService notificationService) {
-    this(tp, writerProvider, partitioner, connectorConfig, context, SYSTEM_TIME, notificationService);
+    this(tp, writerProvider, partitioner, connectorConfig,
+            context, SYSTEM_TIME, notificationService);
   }
 
   // Visible for testing

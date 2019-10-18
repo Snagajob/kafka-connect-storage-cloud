@@ -69,7 +69,7 @@ public class S3SinkTask extends SinkTask {
   }
 
   // visible for testing.
-  public S3SinkTask(NotificationService notificationService){
+  public S3SinkTask(NotificationService notificationService) {
     this.notificationService = notificationService;
     assignment = new HashSet<>();
     topicPartitionWriters = new HashMap<>();
@@ -121,10 +121,9 @@ public class S3SinkTask extends SinkTask {
 
       open(context.assignment());
       log.info("Started S3 connector task with assigned partitions: {}", assignment);
-      if (connectorConfig.getNotificationKafkaEnabled()){
+      if (connectorConfig.getNotificationKafkaEnabled()) {
         notificationService = new KafkaNotificationService(connectorConfig);
-      }
-      else{
+      } else {
         notificationService = new NoOpNotificationService();
       }
 
