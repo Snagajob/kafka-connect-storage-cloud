@@ -108,11 +108,11 @@ public class KafkaNotificationServiceTest {
 
     properties.put("notification.kafka.broker", "localhost:9092");
     properties.put("notification.kafka.topic", "notification-topic");
-    properties.put("notification.kafka.schemaRegistry", "http://localhost:8081");
+    properties.put("notification.kafka.schema.registry", "http://localhost:8081");
     if (saslEnabled) {
-      properties.put("notification.kafka.saslEnabled", "true");
-      properties.put("notification.kafka.saslUsername", "username");
-      properties.put("notification.kafka.saslPassword", "password");
+      properties.put("notification.kafka.sasl.enabled", "true");
+      properties.put("notification.kafka.sasl.username", "username");
+      properties.put("notification.kafka.sasl.password", "password");
     }
     return properties;
   }

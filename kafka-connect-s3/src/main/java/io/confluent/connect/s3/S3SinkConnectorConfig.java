@@ -488,20 +488,20 @@ public class S3SinkConnectorConfig extends StorageSinkConnectorConfig {
 
     this.name = parseName(originalsStrings());
 
-    this.notificationKafkaEnabled =
-        Boolean.valueOf(originalsStrings().getOrDefault("notification.kafka.enabled", "false"));
+    this.notificationKafkaEnabled = Boolean.valueOf(
+        originalsStrings().getOrDefault("notification.kafka.enabled", "false"));
     this.notificationKafkaTopic =
         originalsStrings().get("notification.kafka.topic");
     this.notificationKafkaBroker =
         originalsStrings().get("notification.kafka.broker");
     this.notificationKafkaSchemaRegistry =
-        originalsStrings().get("notification.kafka.schemaRegistry");
-    this.notificationKafkaSaslEnabled =
-        Boolean.valueOf(originalsStrings().getOrDefault("notification.kafka.saslEnabled", "false"));
+        originalsStrings().get("notification.kafka.schema.registry");
+    this.notificationKafkaSaslEnabled = Boolean.valueOf(
+        originalsStrings().getOrDefault("notification.kafka.sasl.enabled", "false"));
     this.notificationKafkaSaslUser =
-        originalsStrings().get("notification.kafka.saslUsername");
+        originalsStrings().get("notification.kafka.sasl.username");
     this.notificationKafkaSaslPassword =
-        originalsStrings().get("notification.kafka.saslPassword");
+        originalsStrings().get("notification.kafka.sasl.password");
 
     addToGlobal(partitionerConfig);
     addToGlobal(commonConfig);
