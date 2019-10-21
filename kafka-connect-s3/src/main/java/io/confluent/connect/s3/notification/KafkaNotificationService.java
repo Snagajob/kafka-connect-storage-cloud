@@ -19,7 +19,6 @@ import io.confluent.connect.s3.S3SinkConnectorConfig;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
-import io.confluent.kafka.serializers.subject.TopicRecordNameStrategy;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -40,50 +39,49 @@ public class KafkaNotificationService implements NotificationService {
   private String notificationTopic;
   private KafkaProducer<String, FileUploadedMessage> producer;
 
-  public KafkaNotificationService(S3SinkConnectorConfig s3SinkConnectorConfig) {
-    this(createProducer(s3SinkConnectorConfig),
-        s3SinkConnectorConfig.getNotificationKafkaTopic());
+  public KafkaNotificationService(S3SinkConnectorConfig config) {
+    this(createProducer(config), config.getNotificationKafkaTopic());
   }
 
-  public KafkaNotificationService(KafkaProducer<String, FileUploadedMessage> producer,
-                                  String notificationTopic) {
+  // visible for testing
+  KafkaNotificationService(KafkaProducer<String, FileUploadedMessage> producer,
+                           String notificationTopic) {
     this.producer = producer;
     this.notificationTopic = notificationTopic;
   }
 
   private static KafkaProducer<String, FileUploadedMessage> createProducer(
-      S3SinkConnectorConfig s3SinkConnectorConfig) {
+      S3SinkConnectorConfig config) {
     
-    final Properties producerProps = new Properties();
-    producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-        s3SinkConnectorConfig.getNotificationKafkaBroker());
-    producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-        StringSerializer.class);
-    producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-        KafkaAvroSerializer.class);
-    producerProps.put(ProducerConfig.CLIENT_ID_CONFIG,
-        s3SinkConnectorConfig.getName());
-    producerProps.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG,
-        s3SinkConnectorConfig.getNotificationKafkaSchemaRegistry());
-    producerProps.put(KafkaAvroSerializerConfig.KEY_SUBJECT_NAME_STRATEGY,
-        TopicRecordNameStrategy.class);
-    producerProps.put(KafkaAvroSerializerConfig.VALUE_SUBJECT_NAME_STRATEGY,
-        TopicRecordNameStrategy.class);
-
-    if (s3SinkConnectorConfig.getNotificationKafkaSaslEnabled()) {
-      producerProps.put("security.protocol", "SASL_SSL");
-      producerProps.put("sasl.mechanism", "PLAIN");
-      producerProps.put("sasl.jaas.config", saslJaasConfig(s3SinkConnectorConfig));
-    }
-    return new KafkaProducer<>(producerProps);
+    Properties properties = getProducerProperties(config);
+    return new KafkaProducer<>(properties);
   }
 
-  private static String saslJaasConfig(S3SinkConnectorConfig conf) {
+  // visible for testing
+  static Properties getProducerProperties(S3SinkConnectorConfig config) {
+    Properties props = new Properties();
+    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, config.getNotificationKafkaBroker());
+    props.put(ProducerConfig.CLIENT_ID_CONFIG, config.getName());
+    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
+    props.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG,
+        config.getNotificationKafkaSchemaRegistry());
+
+    if (config.getNotificationKafkaSaslEnabled()) {
+      props.put("security.protocol", "SASL_SSL");
+      props.put("sasl.mechanism", "PLAIN");
+      props.put("sasl.jaas.config", getSaslJaasConfig(config));
+    }
+
+    return props;
+  }
+
+  private static String getSaslJaasConfig(S3SinkConnectorConfig config) {
     return String.format(
         "org.apache.kafka.common.security.plain.PlainLoginModule required "
             + "username=\"%s\" password=\"%s\";",
-        conf.getNotificationKafkaSaslUser(),
-        conf.getNotificationKafkaSaslPassword());
+        config.getNotificationKafkaSaslUser(),
+        config.getNotificationKafkaSaslPassword());
   }
 
   @Override
@@ -95,6 +93,8 @@ public class KafkaNotificationService implements NotificationService {
   @Override
   public void close() {
     log.info("Closing Notification Service");
-    producer.close();
+    if (producer != null) {
+      producer.close();
+    }
   }
 }
