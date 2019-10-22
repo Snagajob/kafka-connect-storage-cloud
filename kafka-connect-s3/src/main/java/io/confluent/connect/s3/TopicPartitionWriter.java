@@ -501,7 +501,7 @@ public class TopicPartitionWriter {
         FileUploadedMessage msg = new FileUploadedMessage();
         msg.setBucket(connectorConfig.getBucketName());
         msg.setKey(entry.getValue());
-        msg.setPartition(tp.toString());
+        msg.setPartition(tp.partition());
         msg.setTopic(tp.topic());
         notificationService.send(msg);
         log.debug("Notification sent to kafka for {}", entry.getValue());
