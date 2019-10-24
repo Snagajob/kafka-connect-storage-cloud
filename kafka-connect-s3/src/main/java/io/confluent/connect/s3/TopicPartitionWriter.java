@@ -15,6 +15,8 @@
 
 package io.confluent.connect.s3;
 
+import io.confluent.connect.s3.notification.NoOpNotificationService;
+import io.confluent.connect.s3.notification.NotificationService;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.errors.ConnectException;
@@ -35,7 +37,7 @@ import java.util.Queue;
 
 import io.confluent.common.utils.SystemTime;
 import io.confluent.common.utils.Time;
-import io.confluent.connect.s3.storage.S3Storage;
+import io.confluent.connect.s3.notification.FileUploadedMessage;
 import io.confluent.connect.storage.StorageSinkConnectorConfig;
 import io.confluent.connect.storage.common.StorageCommonConfig;
 import io.confluent.connect.storage.common.util.StringUtils;
@@ -84,9 +86,10 @@ public class TopicPartitionWriter {
   private DateTimeZone timeZone;
   private final S3SinkConnectorConfig connectorConfig;
   private static final Time SYSTEM_TIME = new SystemTime();
+  private final NotificationService notificationService;
 
-  public TopicPartitionWriter(TopicPartition tp,
-                              S3Storage storage,
+  // visible for testing
+  TopicPartitionWriter(TopicPartition tp,
                               RecordWriterProvider<S3SinkConnectorConfig> writerProvider,
                               Partitioner<?> partitioner,
                               S3SinkConnectorConfig connectorConfig,
@@ -94,14 +97,26 @@ public class TopicPartitionWriter {
     this(tp, writerProvider, partitioner, connectorConfig, context, SYSTEM_TIME);
   }
 
-  // Visible for testing
+  // visible for testing
   TopicPartitionWriter(TopicPartition tp,
+                              RecordWriterProvider<S3SinkConnectorConfig> writerProvider,
+                              Partitioner<?> partitioner,
+                              S3SinkConnectorConfig connectorConfig,
+                              SinkTaskContext context,
+                              Time time) {
+    this(tp, writerProvider, partitioner, connectorConfig, context, time,
+        new NoOpNotificationService());
+  }
+
+  public TopicPartitionWriter(TopicPartition tp,
                        RecordWriterProvider<S3SinkConnectorConfig> writerProvider,
                        Partitioner<?> partitioner,
                        S3SinkConnectorConfig connectorConfig,
                        SinkTaskContext context,
-                       Time time) {
+                       Time time,
+                       NotificationService notificationService) {
     this.connectorConfig = connectorConfig;
+    this.notificationService = notificationService;
     this.time = time;
     this.tp = tp;
     this.context = context;
@@ -482,6 +497,15 @@ public class TopicPartitionWriter {
     for (Map.Entry<String, String> entry : commitFiles.entrySet()) {
       commitFile(entry.getKey());
       log.debug("Committed {} for {}", entry.getValue(), tp);
+      if (connectorConfig.getNotificationKafkaEnabled()) {
+        FileUploadedMessage msg = new FileUploadedMessage();
+        msg.setBucket(connectorConfig.getBucketName());
+        msg.setKey(entry.getValue());
+        msg.setPartition(tp.partition());
+        msg.setTopic(tp.topic());
+        notificationService.send(msg);
+        log.debug("Notification sent to kafka for {}", entry.getValue());
+      }
     }
     offsetToCommit = currentOffset + 1;
     commitFiles.clear();

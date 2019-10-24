@@ -136,7 +136,6 @@ public class DataWriterAvroTest extends TestWithMockedS3 {
   public void testWriteRecords() throws Exception {
     setUp();
     task = new S3SinkTask(connectorConfig, context, storage, partitioner, format, SYSTEM_TIME);
-
     List<SinkRecord> sinkRecords = createRecords(7);
     // Perform write
     task.put(sinkRecords);

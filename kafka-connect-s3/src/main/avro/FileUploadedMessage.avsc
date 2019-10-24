@@ -1,0 +1,23 @@
+{
+  "namespace": "io.confluent.connect.s3.notification",
+  "type": "record",
+  "name": "FileUploadedMessage",
+  "fields": [
+    {
+      "name": "topic",
+      "type": "string"
+    },
+    {
+      "name": "bucket",
+      "type": "string"
+    },
+    {
+      "name": "key",
+      "type": "string"
+    },
+    {
+      "name":"partition",
+      "type":"int"
+    }
+  ]
+}

@@ -35,6 +35,9 @@ import java.util.Set;
 
 import io.confluent.common.utils.SystemTime;
 import io.confluent.common.utils.Time;
+import io.confluent.connect.s3.notification.KafkaNotificationService;
+import io.confluent.connect.s3.notification.NoOpNotificationService;
+import io.confluent.connect.s3.notification.NotificationService;
 import io.confluent.connect.s3.storage.S3Storage;
 import io.confluent.connect.s3.util.Version;
 import io.confluent.connect.storage.StorageFactory;
@@ -56,6 +59,7 @@ public class S3SinkTask extends SinkTask {
   private Format<S3SinkConnectorConfig, String> format;
   private RecordWriterProvider<S3SinkConnectorConfig> writerProvider;
   private final Time time;
+  private NotificationService notificationService;
 
   /**
    * No-arg constructor. Used by Connect framework.
@@ -111,6 +115,12 @@ public class S3SinkTask extends SinkTask {
 
       open(context.assignment());
       log.info("Started S3 connector task with assigned partitions: {}", assignment);
+      if (connectorConfig.getNotificationKafkaEnabled()) {
+        notificationService = new KafkaNotificationService(connectorConfig);
+      } else {
+        notificationService = new NoOpNotificationService();
+      }
+
     } catch (ClassNotFoundException | IllegalAccessException | InstantiationException
         | InvocationTargetException | NoSuchMethodException e) {
       throw new ConnectException("Reflection exception: ", e);
@@ -136,7 +146,8 @@ public class S3SinkTask extends SinkTask {
           partitioner,
           connectorConfig,
           context,
-          time
+          time,
+          notificationService
       );
       topicPartitionWriters.put(tp, writer);
     }
@@ -232,6 +243,9 @@ public class S3SinkTask extends SinkTask {
     try {
       if (storage != null) {
         storage.close();
+      }
+      if (notificationService != null) {
+        notificationService.close();
       }
     } catch (Exception e) {
       throw new ConnectException(e);
